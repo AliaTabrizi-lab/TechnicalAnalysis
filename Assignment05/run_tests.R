@@ -1,0 +1,18 @@
+# Run from the folder containing the nine indicator scripts.
+for (f in c("sma.R","ema.R","macd.R","stdev.R","linreg.R","rsi.R","stoch_rsi.R","crossover.R","crossunder.R")) source(f)
+check <- function(label, expr) { stopifnot(isTRUE(expr)); cat("PASS:",label,"\n") }
+prices <- c(10,12,15,20,18,22,25,24,21)
+check("SMA", isTRUE(all.equal(sma(prices,3)[1],37/3)))
+check("EMA", isTRUE(all.equal(ema(c(10,12,15),3),c(10,11,13))))
+m <- macd(prices,3,5,2)
+check("MACD", length(m$histogram)==length(prices) && isTRUE(all.equal(m$histogram,m$macd_line-m$signal_line)))
+check("Population standard deviation", isTRUE(all.equal(stdev(c(1,2,3)),sqrt(2/3))))
+l <- linreg(c(2,4,6,8,10),5,0)
+check("Linear regression", isTRUE(all.equal(l$slope,2)) && isTRUE(all.equal(l$intercept,0)))
+r <- rsi(c(1,2,3,4,5,6,7,8),3)
+check("RSI", length(r)==8 && r[4]==100)
+s <- stoch_rsi(100+cumsum(rep(c(2,-1,3,-2,1,-3),15)),5,3,3)
+check("Stoch RSI", length(s$k_line)==91 && any(is.finite(s$d_line)))
+check("Crossover", identical(crossover(c(1,3,1),c(2,2,2)),c(FALSE,TRUE,FALSE)))
+check("Crossunder", identical(crossunder(c(3,1,3),c(2,2,2)),c(FALSE,TRUE,FALSE)))
+cat("All nine indicator smoke tests passed.\n")
